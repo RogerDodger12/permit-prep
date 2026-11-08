@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Missouri Permit Prep</title>
+<meta name="theme-color" content="#006B3F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Permit Prep">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Overpass:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --bg: #E9E8E2;          /* concrete */
+  --surface: #FFFFFF;
+  --ink: #1C2024;
+  --ink-soft: #545B61;
+  --line: #CFCDC5;
+  --guide: #006B3F;       /* highway guide-sign green */
+  --guide-ink: #FFFFFF;
+  --road: #2B3034;        /* asphalt */
+  --road-line: rgba(255,255,255,.55);
+  --warn: #FFC20E;        /* warning-sign yellow */
+  --warn-ink: #1C1A12;
+  --stop: #B7132B;
+  --ok: #1E8A4C;
+  --ok-tint: #2F6F4A;
+  --bad-tint: #7A2C35;
+  --font: "Overpass", "Highway Gothic", "Arial Narrow", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #181B1E;
+    --surface: #23282C;
+    --ink: #ECECE6;
+    --ink-soft: #A8AEB2;
+    --line: #3A4045;
+    --guide: #0A7148;
+    --road: #111416;
+    --road-line: rgba(255,255,255,.35);
+    --ok-tint: #24573A;
+    --bad-tint: #5E222A;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #181B1E; --surface: #23282C; --ink: #ECECE6; --ink-soft: #A8AEB2; --line: #3A4045;
+  --guide: #0A7148; --road: #111416; --road-line: rgba(255,255,255,.35); --ok-tint: #24573A; --bad-tint: #5E222A;
+}
+
+* { box-sizing: border-box; }
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+html, body { margin: 0; background: var(--bg); color: var(--ink); }
+body { font-family: var(--font); font-size: 17px; line-height: 1.45; -webkit-font-smoothing: antialiased; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--warn); outline-offset: 2px; }
+#app { max-width: 560px; margin: 0 auto; padding: 16px 16px 40px; }
+h1, h2, h3 { line-height: 1.15; margin: 0; }
+p { margin: 0; }
+
+/* ---------- guide sign: the one bold element ---------- */
+.guide {
+  background: var(--guide); color: var(--guide-ink);
+  border-radius: 16px; padding: 22px 22px 24px;
+  box-shadow: inset 0 0 0 4px var(--guide), inset 0 0 0 7px #FFFFFF;
+}
+.guide h2 { font-size: 1.45rem; font-weight: 800; letter-spacing: .01em; }
+.guide .small { font-size: .95rem; opacity: .92; }
+
+/* ---------- home ---------- */
+.top { display: flex; align-items: baseline; justify-content: space-between; margin: 4px 2px 14px; }
+.top h1 { font-size: 1.15rem; font-weight: 800; }
+.top .meta { color: var(--ink-soft); font-size: .95rem; }
+.hero { position: relative; padding-top: 18px; }
+.hero .tab {
+  position: absolute; top: -12px; left: 20px;
+  background: var(--guide); color: #fff; font-weight: 800; font-size: .85rem;
+  padding: 3px 12px 1px; border-radius: 6px 6px 0 0;
+  box-shadow: inset 0 0 0 2px #fff;
+}
+.hero .big { font-size: 3.2rem; font-weight: 800; line-height: 1; margin: 6px 0 10px; letter-spacing: -.01em; }
+.hero .big small { font-size: 1.3rem; font-weight: 600; margin-left: 6px; }
+.hero .goal { display: flex; gap: 10px; align-items: center; margin-top: 14px; }
+.meter { flex: 1; height: 10px; border-radius: 6px; background: rgba(255,255,255,.22); overflow: hidden; }
+.meter span { display: block; height: 100%; background: var(--warn); border-radius: 6px; }
+.hero .set { margin-top: 12px; background: #fff; color: var(--guide); border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 800; }
+
+.nudge { margin-top: 14px; background: var(--warn); color: var(--warn-ink); border-radius: 12px; padding: 12px 14px; font-weight: 600; }
+
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.stat b { display: block; font-size: 1.5rem; font-weight: 800; line-height: 1.1; }
+.stat span { color: var(--ink-soft); font-size: .85rem; }
+
+.menu { display: grid; gap: 10px; }
+.go {
+  width: 100%; text-align: left; display: flex; gap: 14px; align-items: center;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px;
+}
+.go .t { font-weight: 800; font-size: 1.05rem; display: block; }
+.go .d { color: var(--ink-soft); font-size: .92rem; display: block; }
+.go .pip { width: 38px; height: 38px; flex: none; }
+.go.primary { background: var(--road); color: #fff; border-color: var(--road); }
+.go.primary .d { color: rgba(255,255,255,.75); }
+.go[disabled] { opacity: .5; cursor: default; }
+
+/* ---------- quiz ---------- */
+.bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.link { background: none; border: 0; color: var(--ink-soft); font-weight: 600; padding: 8px 4px; }
+.count { font-weight: 800; color: var(--ink-soft); }
+.lane { height: 8px; background: var(--road); border-radius: 4px; overflow: hidden; margin-bottom: 16px;
+  background-image: repeating-linear-gradient(90deg, var(--road-line) 0 14px, transparent 14px 26px);
+  background-size: 100% 2px; background-repeat: no-repeat; background-position: 0 3px; }
+.lane span { display: block; height: 100%; background: var(--warn); transition: width .3s; }
+.signpic { margin: 0 auto 14px; width: min(56vw, 210px); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 16px; padding: 14px; }
+.signpic svg { display: block; width: 100%; height: auto; }
+.qcard h2 { font-size: 1.3rem; font-weight: 700; }
+.qcard .tag { font-size: .85rem; opacity: .85; margin-bottom: 8px; display: block; }
+
+.road { list-style: none; margin: 16px 0 0; padding: 6px 0; background: var(--road); border-radius: 16px; overflow: hidden; }
+.road li + li { border-top: 3px dashed var(--road-line); }
+.ans {
+  width: 100%; display: flex; gap: 14px; align-items: flex-start; text-align: left;
+  background: transparent; color: #fff; border: 0; padding: 15px 16px; min-height: 56px;
+}
+.ans .k { flex: none; width: 30px; height: 30px; border-radius: 7px; background: #fff; color: var(--road);
+  display: grid; place-items: center; font-weight: 800; font-size: .95rem; margin-top: -2px; }
+.ans:not([disabled]):hover { background: rgba(255,255,255,.06); }
+.ans[disabled] { cursor: default; }
+.ans.right { background: var(--ok-tint); }
+.ans.right .k { background: #3BD27A; color: #0B2416; }
+.ans.wrong { background: var(--bad-tint); }
+.ans.wrong .k { background: #FF8A96; color: #2A0A0F; }
+.ans.picked { background: rgba(255,194,14,.22); }
+.ans.dim { opacity: .55; }
+
+.explain { margin-top: 14px; background: var(--surface); border: 1px solid var(--line); border-left: 8px solid var(--warn);
+  border-radius: 12px; padding: 14px 16px; }
+.explain.good { border-left-color: var(--ok); }
+.explain h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+.explain .src { color: var(--ink-soft); font-size: .85rem; margin-top: 6px; }
+.next { margin-top: 14px; width: 100%; background: var(--warn); color: var(--warn-ink); border: 0; border-radius: 12px;
+  padding: 15px; font-weight: 800; font-size: 1.05rem; }
+.hint { color: var(--ink-soft); font-size: .9rem; margin-top: 12px; text-align: center; }
+
+/* ---------- results ---------- */
+.result .verdict { font-size: 2.6rem; font-weight: 800; line-height: 1; margin: 4px 0 12px; }
+.result.fail { background: var(--road); box-shadow: inset 0 0 0 4px var(--road), inset 0 0 0 7px #fff; }
+.scoreline { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px solid rgba(255,255,255,.3); }
+.scoreline b { font-size: 1.15rem; }
+.misslist { margin-top: 18px; display: grid; gap: 10px; }
+.miss { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+.miss p + p { margin-top: 4px; }
+.miss .yours { color: var(--stop); }
+.miss .corr { color: var(--ok); font-weight: 700; }
+.btnrow { display: grid; gap: 10px; margin-top: 16px; }
+.btn { width: 100%; border-radius: 12px; padding: 14px; font-weight: 800; border: 1px solid var(--line); background: var(--surface); }
+.btn.solid { background: var(--warn); color: var(--warn-ink); border-color: var(--warn); }
+
+/* ---------- lists, progress, settings ---------- */
+.section-h { font-size: 1.15rem; font-weight: 800; margin: 22px 2px 10px; }
+.topic { display: grid; gap: 6px; }
+.track { height: 10px; border-radius: 6px; background: var(--line); overflow: hidden; }
+.track span { display: block; height: 100%; background: var(--guide); }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.panel + .panel { margin-top: 10px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.muted { color: var(--ink-soft); font-size: .92rem; }
+.chart svg { display: block; width: 100%; height: auto; }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.badge { border-radius: 12px; padding: 12px; border: 1px solid var(--line); background: var(--surface); }
+.badge b { display: block; font-weight: 800; }
+.badge span { color: var(--ink-soft); font-size: .85rem; }
+.badge.on { background: var(--guide); color: #fff; border-color: var(--guide); box-shadow: inset 0 0 0 3px var(--guide), inset 0 0 0 5px #fff; }
+.badge.on span { color: rgba(255,255,255,.85); }
+.code { font-size: 2rem; font-weight: 800; letter-spacing: .08em; margin: 6px 0; }
+input[type=text], input[type=date] { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); }
+input[type=text] { text-transform: uppercase; letter-spacing: .06em; }
+.switch { position: relative; width: 52px; height: 30px; flex: none; }
+.switch input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.switch span { position: absolute; inset: 0; border-radius: 30px; background: var(--line); transition: background .2s; pointer-events: none; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: transform .2s; }
+.switch input:checked + span { background: var(--guide); }
+.switch input:checked + span::after { transform: translateX(22px); }
+.switch input:focus-visible + span { outline: 3px solid var(--warn); outline-offset: 2px; }
+
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 140%);
+  background: var(--guide); color: #fff; padding: 12px 18px; border-radius: 12px; font-weight: 800;
+  box-shadow: inset 0 0 0 3px var(--guide), inset 0 0 0 5px #fff; transition: transform .35s, visibility .35s; z-index: 20; max-width: 92vw; text-align: center; visibility: hidden; }
+.toast.show { transform: translate(-50%, 0); visibility: visible; }
+#confetti { position: fixed; inset: 0; pointer-events: none; z-index: 30; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<div class="toast" id="toast" role="status"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<script src="questions.js"></script>
+<script src="signs.js"></script>
+<script>
+"use strict";
+
+/* ================= settings you may change ================= */
+const CFG = {
+  WRITTEN_COUNT: 25, WRITTEN_PASS: 20,   // per the Missouri Driver Guide
+  SIGN_COUNT: 16, SIGN_PASS: 13,         // confirm against the official sign test before relying on it
+  PRACTICE_LEN: 10, DRILL_LEN: 15
+};
+// Paste your Cloudflare Worker address here to turn on progress sync, e.g.
+// const SYNC_URL = "https://permit-sync.yourname.workers.dev";
+const SYNC_URL = "";
+
+/* ================= data ================= */
+const Q = window.QUESTIONS;
+const BY_ID = Object.fromEntries(Q.map(q => [q.id, q]));
+const WRITTEN = Q.filter(q => q.type !== "sign");
+const SIGNQ = Q.filter(q => q.type === "sign");
+const TOPICS = window.TOPICS;
+const STORE = "mpq.progress.v1", CODE_KEY = "mpq.code", SYNC_KEY = "mpq.lastSync";
+
+const blank = () => ({ version: 1, updatedAt: 0, stats: {}, days: {}, mocks: [], badges: {}, testDate: null, sound: true });
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(STORE)); if (s && s.version === 1) return Object.assign(blank(), s); } catch (e) {}
+  return blank();
+}
+let P = load();
+function save() {
+  P.updatedAt = Date.now();
+  try { localStorage.setItem(STORE, JSON.stringify(P)); } catch (e) {}
+  schedulePush();
+}
+
+/* ================= helpers ================= */
+const $ = s => document.querySelector(s);
+const app = $("#app");
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const z = n => String(n).padStart(2, "0");
+const dayKey = (d = new Date()) => d.getFullYear() + "-" + z(d.getMonth() + 1) + "-" + z(d.getDate());
+const LETTERS = ["A", "B", "C", "D"];
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const stat = id => P.stats[id];
+const mastered = id => { const s = stat(id); return !!s && s.streak >= 2; };
+const isMissed = id => { const s = stat(id); return !!s && s.wrong > 0 && s.streak < 2; };
+const missedIds = () => Q.filter(q => isMissed(q.id)).map(q => q.id);
+const answeredTotal = () => Object.values(P.stats).reduce((n, s) => n + s.seen, 0);
+const todayCount = () => P.days[dayKey()] || 0;
+
+function streak() {
+  const d = new Date();
+  if (!P.days[dayKey(d)]) d.setDate(d.getDate() - 1);
+  let n = 0;
+  while (P.days[dayKey(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function daysLeft() {
+  if (!P.testDate) return null;
+  const [y, m, d] = P.testDate.split("-").map(Number);
+  const t = new Date(y, m - 1, d), now = new Date(); now.setHours(0, 0, 0, 0);
+  return Math.round((t - now) / 86400000);
+}
+function dailyGoal() {
+  const left = daysLeft();
+  if (left == null || left <= 0) return 15;
+  const toLearn = Q.filter(q => !mastered(q.id)).length;
+  return Math.max(10, Math.min(60, Math.ceil((toLearn * 2) / left)));
+}
+
+/* weighted pick: favor missed and unseen questions */
+function pick(pool, n) {
+  const items = pool.map(q => {
+    const s = stat(q.id);
+    const w = !s ? 3 : isMissed(q.id) ? 4 : mastered(q.id) ? 1 : 2;
+    return { q, k: Math.pow(Math.random(), 1 / w) };
+  });
+  return items.sort((a, b) => b.k - a.k).slice(0, n).map(x => x.q);
+}
+const asItems = qs => qs.map(q => ({ q, order: shuffle([0, 1, 2, 3]), pick: null }));
+
+/* ================= sound ================= */
+let ac = null;
+function tone(freq, start, dur, type = "sine", gain = 0.18) {
+  if (!P.sound) return;
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    if (ac.state === "suspended") ac.resume();
+    const t0 = ac.currentTime + start, o = ac.createOscillator(), g = ac.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(gain, t0 + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g).connect(ac.destination); o.start(t0); o.stop(t0 + dur + 0.05);
+  } catch (e) {}
+}
+const SFX = {
+  right: () => { tone(784, 0, .18, "triangle"); tone(1175, .09, .28, "triangle"); },
+  wrong: () => { tone(311, 0, .35, "sine", .1); },
+  tap: () => { tone(520, 0, .06, "triangle", .07); },
+  fanfare: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, i * .13, .35, "triangle", .2)); tone(1047, .55, .7, "triangle", .2); },
+  badge: () => { [988, 1319, 1568].forEach((f, i) => tone(f, i * .08, .25, "sine", .14)); }
+};
+
+/* ================= toast + confetti ================= */
+let toastTimer;
+function toast(msg) {
+  const t = $("#toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+function confetti() {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const c = $("#confetti"), x = c.getContext("2d");
+  c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio;
+  x.scale(devicePixelRatio, devicePixelRatio);
+  const cols = ["#FFC20E", "#006B3F", "#FFFFFF", "#C8102E", "#F26B21"];
+  const bits = Array.from({ length: 140 }, () => ({
+    x: innerWidth / 2 + (Math.random() - .5) * 80, y: innerHeight * .35,
+    vx: (Math.random() - .5) * 12, vy: -Math.random() * 13 - 4,
+    r: Math.random() * Math.PI, vr: (Math.random() - .5) * .3,
+    w: 6 + Math.random() * 6, h: 4 + Math.random() * 4, c: cols[Math.floor(Math.random() * cols.length)]
+  }));
+  let frame = 0;
+  (function tick() {
+    x.clearRect(0, 0, innerWidth, innerHeight);
+    bits.forEach(b => {
+      b.vy += .32; b.vx *= .99; b.x += b.vx; b.y += b.vy; b.r += b.vr;
+      x.save(); x.translate(b.x, b.y); x.rotate(b.r); x.fillStyle = b.c; x.fillRect(-b.w / 2, -b.h / 2, b.w, b.h); x.restore();
+    });
+    if (++frame < 170) requestAnimationFrame(tick); else x.clearRect(0, 0, innerWidth, innerHeight);
+  })();
+}
+
+/* ================= badges ================= */
+const BADGES = [
+  { id: "first10", name: "Learner's permit", desc: "Answer 10 questions", test: () => answeredTotal() >= 10 },
+  { id: "hundred", name: "Hundred miles", desc: "Answer 100 questions", test: () => answeredTotal() >= 100 },
+  { id: "streak3", name: "Three-day run", desc: "Practice 3 days in a row", test: () => streak() >= 3 },
+  { id: "streak7", name: "Full week", desc: "Practice 7 days in a row", test: () => streak() >= 7 },
+  { id: "streak14", name: "Road trip", desc: "Practice 14 days in a row", test: () => streak() >= 14 },
+  { id: "mockpass", name: "Passed a mock test", desc: "Pass both rounds of a mock test", test: () => P.mocks.some(m => m.passed) },
+  { id: "perfect", name: "Perfect written", desc: "Score 25 of 25 on the written round", test: () => P.mocks.some(m => m.written === m.wTotal) },
+  { id: "signace", name: "Sign reader", desc: "Get every sign right in a sign round", test: () => P.mocks.some(m => m.signs === m.sTotal) },
+  ...Object.keys(TOPICS).map(t => ({
+    id: "topic-" + t, name: TOPICS[t] + " mastered", desc: "Answer every " + TOPICS[t].toLowerCase() + " question right twice in a row",
+    test: () => Q.filter(q => q.t === t).every(q => mastered(q.id))
+  }))
+];
+function checkBadges() {
+  const fresh = BADGES.filter(b => !P.badges[b.id] && b.test());
+  fresh.forEach(b => { P.badges[b.id] = dayKey(); });
+  if (fresh.length) { setTimeout(() => { SFX.badge(); toast("Badge earned: " + fresh[fresh.length - 1].name); }, 450); }
+}
+
+/* ================= recording answers ================= */
+function record(q, correct) {
+  const s = P.stats[q.id] || { seen: 0, right: 0, wrong: 0, streak: 0 };
+  s.seen++;
+  if (correct) { s.right++; s.streak++; } else { s.wrong++; s.streak = 0; }
+  P.stats[q.id] = s;
+  const k = dayKey(); P.days[k] = (P.days[k] || 0) + 1;
+  checkBadges();
+  save();
+}
+
+/* ================= sessions ================= */
+let S = null;   // active quiz session
+let view = "home";
+
+function startPractice(kind, topic) {
+  let qs, title;
+  if (kind === "mix") { qs = pick(Q, CFG.PRACTICE_LEN); title = "Practice"; }
+  else if (kind === "topic") { qs = pick(Q.filter(q => q.t === topic), CFG.DRILL_LEN); title = TOPICS[topic]; }
+  else if (kind === "missed") { qs = shuffle(missedIds().map(id => BY_ID[id])).slice(0, CFG.DRILL_LEN); title = "Missed questions"; }
+  if (!qs || !qs.length) return go("home");
+  S = { mode: "practice", title, items: asItems(qs), i: 0, answered: false };
+  go("quiz");
+}
+function startMock() {
+  S = {
+    mode: "mock", title: "Mock test", stage: "written",
+    items: asItems(shuffle(WRITTEN).slice(0, CFG.WRITTEN_COUNT)),
+    signItems: asItems(shuffle(SIGNQ).slice(0, CFG.SIGN_COUNT)),
+    i: 0
+  };
+  go("quiz");
+}
+const curList = () => (S.mode === "mock" && S.stage === "signs") ? S.signItems : S.items;
+
+function answer(displayIdx) {
+  const list = curList(), it = list[S.i];
+  if (it.pick !== null) return;
+  it.pick = it.order[displayIdx];
+  const correct = it.pick === it.q.c;
+  record(it.q, correct);
+  if (S.mode === "mock") {
+    SFX.tap(); render();
+    setTimeout(() => advance(), 260);
+  } else {
+    correct ? SFX.right() : SFX.wrong();
+    render();
+    const n = $(".next"); if (n) n.focus({ preventScroll: true });
+  }
+}
+function advance() {
+  const list = curList();
+  if (S.i < list.length - 1) { S.i++; render(); window.scrollTo(0, 0); return; }
+  if (S.mode === "mock" && S.stage === "written") { S.stage = "break"; render(); return; }
+  if (S.mode === "mock") return finishMock();
+  go("done");
+  const r = S.items.filter(it => it.pick === it.q.c).length;
+  if (r / S.items.length >= 0.8) { SFX.fanfare(); confetti(); }
+}
+function finishMock() {
+  const w = S.items.filter(it => it.pick === it.q.c).length;
+  const s = S.signItems.filter(it => it.pick === it.q.c).length;
+  const passed = w >= CFG.WRITTEN_PASS && s >= CFG.SIGN_PASS;
+  P.mocks.push({ date: dayKey(), written: w, wTotal: S.items.length, signs: s, sTotal: S.signItems.length, passed });
+  checkBadges(); save();
+  S.result = { w, s, passed };
+  go("results");
+  if (passed) { SFX.fanfare(); confetti(); }
+}
+
+/* ================= views ================= */
+function go(v) {
+  if (v !== view) history.pushState({ v }, "");
+  view = v; render(); window.scrollTo(0, 0);
+}
+window.addEventListener("popstate", () => { view = "home"; S = null; render(); });
+
+function render() {
+  const fn = { home: vHome, quiz: vQuiz, done: vDone, results: vResults, topics: vTopics, progress: vProgress, settings: vSettings }[view] || vHome;
+  app.innerHTML = fn();
+}
+
+function vHome() {
+  const left = daysLeft(), goal = dailyGoal(), today = todayCount(), st = streak(), missed = missedIds().length;
+  const learned = Q.filter(q => mastered(q.id)).length;
+  let hero;
+  if (left == null) {
+    hero = `<h2>Pick your test date and the app will pace your practice.</h2>
+      <button class="set" data-act="settings">Set test date</button>`;
+  } else if (left < 0) {
+    hero = `<p class="small">Your test date has passed</p><h2>How did it go? Set a new date if you're retesting.</h2>
+      <button class="set" data-act="settings">Change test date</button>`;
+  } else {
+    const label = left === 0 ? "Test day is today" : left === 1 ? "day to test day" : "days to test day";
+    hero = `<p class="big">${left === 0 ? "Today" : left}<small>${left === 0 ? "" : esc(label)}</small></p>
+      ${left === 0 ? `<p class="small">${esc(label)}. One last mock test?</p>` : ""}
+      <div class="goal"><div class="meter" aria-hidden="true"><span style="width:${Math.min(100, Math.round(today / goal * 100))}%"></span></div>
+      <span class="small">${today} of ${goal} today</span></div>`;
+  }
+  const nudge = (st > 0 && today === 0) ? `<p class="nudge">Answer a few questions today to keep your ${st}-day streak going.</p>` : "";
+  return `
+  <div class="top"><h1>Missouri Permit Prep</h1><span class="meta">${learned} of ${Q.length} learned</span></div>
+  <section class="guide hero"><span class="tab">Test day</span>${hero}</section>
+  ${nudge}
+  <div class="stats">
+    <div class="stat"><b>${st}</b><span>day streak</span></div>
+    <div class="stat"><b>${missed}</b><span>to review</span></div>
+    <div class="stat"><b>${Object.keys(P.badges).length}</b><span>badges</span></div>
+  </div>
+  <div class="menu">
+    <button class="go primary" data-act="mix">${pip("guide")}<span><span class="t">Practice</span><span class="d">${CFG.PRACTICE_LEN} questions, mixed, with explanations</span></span></button>
+    <button class="go" data-act="mock">${pip("road")}<span><span class="t">Mock test</span><span class="d">${CFG.WRITTEN_COUNT} written questions plus a ${CFG.SIGN_COUNT}-sign round, scored at the end</span></span></button>
+    <button class="go" data-act="topic" data-topic="signs">${pip("sign")}<span><span class="t">Road signs</span><span class="d">Practice reading signs by shape, color, and symbol</span></span></button>
+    <button class="go" data-act="missed" ${missed ? "" : "disabled"}>${pip("warn")}<span><span class="t">Missed questions</span><span class="d">${missed ? missed + " waiting. Get each right twice to clear it." : "Nothing to review yet."}</span></span></button>
+    <button class="go" data-act="topics">${pip("list")}<span><span class="t">Topic drills</span><span class="d">Focus on one chapter of the driver guide</span></span></button>
+    <button class="go" data-act="progress">${pip("chart")}<span><span class="t">Progress</span><span class="d">Scores, weak spots, and badges</span></span></button>
+    <button class="go" data-act="settings">${pip("gear")}<span><span class="t">Settings</span><span class="d">Sound, test date, and moving to a new phone</span></span></button>
+  </div>`;
+}
+
+function pip(kind) {
+  const m = {
+    guide: `<rect x="2" y="6" width="34" height="26" rx="5" fill="#006B3F" stroke="#fff" stroke-width="2"/>`,
+    road: `<rect x="2" y="4" width="34" height="30" rx="6" fill="#2B3034"/><path d="M19 8v6M19 17v6M19 26v4" stroke="#FFC20E" stroke-width="3"/>`,
+    sign: `<polygon points="19,2 36,19 19,36 2,19" fill="#FFC20E" stroke="#151515" stroke-width="2"/>`,
+    warn: `<polygon points="19,3 36,33 2,33" fill="#B7132B"/><rect x="17" y="13" width="4" height="10" fill="#fff"/><rect x="17" y="26" width="4" height="4" fill="#fff"/>`,
+    list: `<rect x="2" y="4" width="34" height="30" rx="6" fill="#1F4E9C"/><path d="M9 13h20M9 19h20M9 25h14" stroke="#fff" stroke-width="3"/>`,
+    chart: `<rect x="2" y="4" width="34" height="30" rx="6" fill="#545B61"/><path d="M8 27l8-8 6 5 9-11" fill="none" stroke="#FFC20E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`,
+    gear: `<circle cx="19" cy="19" r="15" fill="#545B61"/><circle cx="19" cy="19" r="5" fill="#fff"/>`
+  };
+  return `<svg class="pip" viewBox="0 0 38 38" aria-hidden="true">${m[kind]}</svg>`;
+}
+
+function vQuiz() {
+  if (!S) return vHome();
+  if (S.mode === "mock" && S.stage === "break") {
+    return `<div class="bar"><button class="link" data-act="quit">Quit</button><span class="count">Round 2</span></div>
+      <section class="guide"><p class="small">Written round finished</p><h2>Next up: the road sign round</h2>
+      <p class="small" style="margin-top:10px">${CFG.SIGN_COUNT} signs. Your scores for both rounds come at the end, just like the real exam.</p></section>
+      <button class="next" data-act="signround">Start the sign round</button>`;
+  }
+  const list = curList(), it = list[S.i], q = it.q, done = it.pick !== null, mock = S.mode === "mock";
+  const label = mock ? (S.stage === "signs" ? "Sign " : "Question ") : "";
+  const pct = Math.round((S.i + (done ? 1 : 0)) / list.length * 100);
+  const answers = it.order.map((orig, di) => {
+    let cls = "";
+    if (done && !mock) cls = orig === q.c ? "right" : orig === it.pick ? "wrong" : "dim";
+    if (done && mock && orig === it.pick) cls = "picked";
+    return `<li><button class="ans ${cls}" data-act="answer" data-i="${di}" ${done ? "disabled" : ""}>
+      <span class="k">${LETTERS[di]}</span><span>${esc(q.a[orig])}</span></button></li>`;
+  }).join("");
+  let after = "";
+  if (done && !mock) {
+    const ok = it.pick === q.c, letter = LETTERS[it.order.indexOf(q.c)];
+    after = `<div class="explain ${ok ? "good" : ""}">
+      <h3>${ok ? "Correct" : "The answer is " + letter + ": " + esc(q.a[q.c])}</h3>
+      <p>${esc(q.e)}</p><p class="src">Missouri Driver Guide, ${esc(q.ch)}</p></div>
+      <button class="next" data-act="next">${S.i < list.length - 1 ? "Next question" : "Finish"}</button>`;
+  }
+  return `
+  <div class="bar"><button class="link" data-act="quit">Quit</button><span class="count">${label}${S.i + 1} of ${list.length}</span></div>
+  <div class="lane" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><span style="width:${pct}%"></span></div>
+  ${q.type === "sign" ? `<figure class="signpic">${window.signSVG(q.img)}</figure>` : ""}
+  <section class="guide qcard"><span class="tag">${esc(mock ? S.title : (S.title === TOPICS[q.t] ? q.ch : TOPICS[q.t]))}</span><h2>${esc(q.q)}</h2></section>
+  <ul class="road">${answers}</ul>
+  ${after}
+  ${mock && !done ? `<p class="hint">No hints during the mock test. You'll see every answer at the end.</p>` : ""}`;
+}
+
+function vDone() {
+  if (!S) return vHome();
+  const right = S.items.filter(it => it.pick === it.q.c).length, n = S.items.length;
+  const great = right / n >= 0.8;
+  return `<section class="guide result"><p class="small">${esc(S.title)} finished</p>
+    <p class="verdict">${right} of ${n}</p><p class="small">${great ? "Nice driving. That's passing territory." : "Every miss goes into your review list so you can clear it next time."}</p></section>
+    <div class="btnrow">
+      <button class="btn solid" data-act="mix">Practice again</button>
+      ${missedIds().length ? `<button class="btn" data-act="missed">Review missed questions</button>` : ""}
+      <button class="btn" data-act="home">Home</button>
+    </div>`;
+}
+
+function vResults() {
+  if (!S || !S.result) return vHome();
+  const { w, s, passed } = S.result;
+  const misses = [...S.items, ...S.signItems].filter(it => it.pick !== it.q.c);
+  const missHtml = misses.map(it => `<div class="miss">
+      <p><b>${esc(it.q.q)}</b>${it.q.type === "sign" ? ` <span class="muted">(${esc(signName(it.q))})</span>` : ""}</p>
+      <p class="yours">Your answer: ${esc(it.q.a[it.pick])}</p>
+      <p class="corr">Correct: ${esc(it.q.a[it.q.c])}</p>
+      <p class="muted">${esc(it.q.e)} (${esc(it.q.ch)})</p></div>`).join("");
+  return `
+  <section class="guide result ${passed ? "" : "fail"}">
+    <p class="small">Mock test</p>
+    <p class="verdict">${passed ? "You passed" : "Not yet"}</p>
+    <div class="scoreline"><span>Written round</span><b>${w} of ${S.items.length} <span class="small">(need ${CFG.WRITTEN_PASS})</span></b></div>
+    <div class="scoreline"><span>Sign round</span><b>${s} of ${S.signItems.length} <span class="small">(need ${CFG.SIGN_PASS})</span></b></div>
+  </section>
+  ${misses.length ? `<h2 class="section-h">What you missed</h2><div class="misslist">${missHtml}</div>` : `<p class="nudge">A perfect score. Every single answer right.</p>`}
+  <div class="btnrow">
+    <button class="btn solid" data-act="mock">Take another mock test</button>
+    ${missedIds().length ? `<button class="btn" data-act="missed">Review missed questions</button>` : ""}
+    <button class="btn" data-act="home">Home</button>
+  </div>`;
+}
+function signName(q) { return q.a[q.c]; }
+
+function topicStats(t) {
+  const qs = Q.filter(q => q.t === t);
+  let seen = 0, right = 0;
+  qs.forEach(q => { const s = stat(q.id); if (s) { seen += s.seen; right += s.right; } });
+  return { n: qs.length, learned: qs.filter(q => mastered(q.id)).length, acc: seen ? Math.round(right / seen * 100) : null };
+}
+
+function vTopics() {
+  const rows = Object.keys(TOPICS).map(t => {
+    const ts = topicStats(t);
+    return `<button class="go" data-act="topic" data-topic="${t}"><span style="flex:1">
+      <span class="t">${esc(TOPICS[t])}</span>
+      <span class="d">${ts.learned} of ${ts.n} learned${ts.acc != null ? ", " + ts.acc + "% right so far" : ""}</span>
+      <span class="track" style="display:block;margin-top:8px"><span style="width:${Math.round(ts.learned / ts.n * 100)}%"></span></span>
+      </span></button>`;
+  }).join("");
+  return `<div class="bar"><button class="link" data-act="home">Back</button><span class="count">Topic drills</span></div>
+    <div class="menu">${rows}</div>`;
+}
+
+function chartSVG() {
+  const m = P.mocks.slice(-12);
+  if (m.length < 2) return `<p class="muted">Take two mock tests to see your written scores as a trend line.</p>`;
+  const W = 320, H = 150, pad = 26, max = CFG.WRITTEN_COUNT;
+  const x = i => pad + i * (W - pad * 2) / (m.length - 1);
+  const y = v => H - pad - v / max * (H - pad * 2);
+  const pts = m.map((r, i) => `${x(i).toFixed(1)},${y(r.written).toFixed(1)}`).join(" ");
+  const dots = m.map((r, i) => `<circle cx="${x(i)}" cy="${y(r.written)}" r="4.5" fill="${r.passed ? "var(--guide)" : "var(--stop)"}"/>`).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Written scores for the last ${m.length} mock tests">
+    <line x1="${pad}" x2="${W - pad}" y1="${y(CFG.WRITTEN_PASS)}" y2="${y(CFG.WRITTEN_PASS)}" stroke="var(--warn)" stroke-width="2" stroke-dasharray="6 5"/>
+    <text x="${W - pad}" y="${y(CFG.WRITTEN_PASS) - 6}" text-anchor="end" font-size="11" fill="var(--ink-soft)">pass line ${CFG.WRITTEN_PASS}</text>
+    <text x="${pad - 6}" y="${y(max) + 4}" text-anchor="end" font-size="11" fill="var(--ink-soft)">${max}</text>
+    <text x="${pad - 6}" y="${y(0) + 4}" text-anchor="end" font-size="11" fill="var(--ink-soft)">0</text>
+    <polyline points="${pts}" fill="none" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>
+    ${dots}</svg>`;
+}
+
+function vProgress() {
+  const learned = Q.filter(q => mastered(q.id)).length;
+  const best = P.mocks.length ? Math.max(...P.mocks.map(m => m.written)) : null;
+  const topics = Object.keys(TOPICS).map(t => {
+    const ts = topicStats(t);
+    return `<div class="topic panel"><div class="row"><b>${esc(TOPICS[t])}</b><span class="muted">${ts.acc != null ? ts.acc + "% right" : "Not started"}</span></div>
+      <div class="track"><span style="width:${Math.round(ts.learned / ts.n * 100)}%"></span></div>
+      <span class="muted">${ts.learned} of ${ts.n} learned</span></div>`;
+  }).join("");
+  const badges = BADGES.map(b => `<div class="badge ${P.badges[b.id] ? "on" : ""}"><b>${esc(b.name)}</b><span>${P.badges[b.id] ? "Earned " + esc(P.badges[b.id]) : esc(b.desc)}</span></div>`).join("");
+  return `<div class="bar"><button class="link" data-act="home">Back</button><span class="count">Progress</span></div>
+    <div class="stats">
+      <div class="stat"><b>${learned}</b><span>of ${Q.length} learned</span></div>
+      <div class="stat"><b>${P.mocks.length}</b><span>mock tests</span></div>
+      <div class="stat"><b>${best == null ? "None" : best}</b><span>best written</span></div>
+    </div>
+    <h2 class="section-h">Mock test scores</h2><div class="panel chart">${chartSVG()}</div>
+    <h2 class="section-h">By topic</h2>${topics}
+    <h2 class="section-h">Badges</h2><div class="badges">${badges}</div>
+    <p class="muted" style="margin-top:14px">A question counts as learned once you answer it right twice in a row.</p>`;
+}
+
+function vSettings() {
+  const code = localStorage.getItem(CODE_KEY);
+  const last = localStorage.getItem(SYNC_KEY);
+  const sync = !SYNC_URL
+    ? `<p class="muted">Cloud sync isn't turned on yet. Add the Worker address to SYNC_URL in index.html to back up progress.</p>`
+    : `<p class="muted">Your sync code backs up your progress. Keep it somewhere safe.</p>
+       <p class="code">${code ? esc(fmtCode(code)) : "Setting up"}</p>
+       <div class="row"><button class="btn" data-act="copycode" style="width:auto;padding:10px 16px">Copy code</button>
+       <span class="muted">${last ? "Last backed up " + esc(new Date(+last).toLocaleString()) : "Not backed up yet"}</span></div>
+       <h3 style="margin:18px 0 8px;font-size:1rem">New phone?</h3>
+       <p class="muted" style="margin-bottom:8px">Enter the code from your old phone to bring your progress over. This replaces the progress on this phone.</p>
+       <input type="text" id="codein" maxlength="9" placeholder="ABCD-2345" autocomplete="off" autocapitalize="characters">
+       <button class="btn solid" data-act="loadcode" style="margin-top:10px">Load my progress</button>`;
+  return `<div class="bar"><button class="link" data-act="home">Back</button><span class="count">Settings</span></div>
+    <div class="panel"><div class="row"><div><b>Sound</b><p class="muted">Chimes for right answers and badges</p></div>
+      <label class="switch"><input type="checkbox" id="soundtog" ${P.sound ? "checked" : ""} aria-label="Sound"><span></span></label></div></div>
+    <div class="panel"><b>Test date</b><p class="muted" style="margin-bottom:8px">Sets the countdown and your daily goal.</p>
+      <input type="date" id="datein" value="${P.testDate || ""}" min="${dayKey()}">
+      ${P.testDate ? `<button class="link" data-act="cleardate">Clear test date</button>` : ""}</div>
+    <div class="panel"><b>Sync and new phones</b>${sync}</div>
+    <div class="panel"><b>Start over</b><p class="muted" style="margin-bottom:8px">Erases scores, streaks, and badges on this phone and in the backup.</p>
+      <button class="btn" data-act="reset" style="color:var(--stop)">Erase all progress</button></div>`;
+}
+
+/* ================= events ================= */
+app.addEventListener("click", e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const a = b.dataset.act;
+  if (a === "answer") return answer(+b.dataset.i);
+  if (a === "next") return advance();
+  if (a === "signround") { S.stage = "signs"; S.i = 0; render(); return; }
+  if (a === "mix") return startPractice("mix");
+  if (a === "topic") return startPractice("topic", b.dataset.topic);
+  if (a === "missed") return startPractice("missed");
+  if (a === "mock") return startMock();
+  if (a === "quit") {
+    if (S && S.mode === "mock" && !confirm("Quit the mock test? This attempt won't be scored.")) return;
+    S = null; return go("home");
+  }
+  if (["home", "topics", "progress", "settings"].includes(a)) { if (a === "home") S = null; return go(a); }
+  if (a === "cleardate") { P.testDate = null; save(); return render(); }
+  if (a === "copycode") {
+    const c = fmtCode(localStorage.getItem(CODE_KEY) || "");
+    (navigator.clipboard ? navigator.clipboard.writeText(c) : Promise.reject()).then(() => toast("Code copied"), () => toast("Your code: " + c));
+    return;
+  }
+  if (a === "loadcode") return loadFromCode();
+  if (a === "reset") {
+    if (!confirm("Erase all progress? This can't be undone.")) return;
+    const keepSound = P.sound; P = blank(); P.sound = keepSound; save(); toast("Progress erased"); return go("home");
+  }
+});
+app.addEventListener("change", e => {
+  if (e.target.id === "soundtog") { P.sound = e.target.checked; save(); if (P.sound) SFX.right(); }
+  if (e.target.id === "datein") { P.testDate = e.target.value || null; save(); toast(P.testDate ? "Test date saved" : "Test date cleared"); render(); }
+});
+document.addEventListener("keydown", e => {
+  if (view !== "quiz" || !S) return;
+  const k = e.key.toUpperCase(), i = LETTERS.indexOf(k);
+  if (i >= 0) { const btn = app.querySelector(`.ans[data-i="${i}"]:not([disabled])`); if (btn) btn.click(); }
+  if (e.key === "Enter" && $(".next") && document.activeElement !== $(".next")) $(".next").click();
+});
+
+/* ================= sync (Cloudflare Worker) ================= */
+const ALPH = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+const fmtCode = c => c ? c.slice(0, 4) + "-" + c.slice(4) : "";
+const cleanCode = s => (s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+function newCode() { const r = crypto.getRandomValues(new Uint32Array(8)); return Array.from(r, n => ALPH[n % ALPH.length]).join(""); }
+
+let pushTimer;
+function schedulePush() { if (!SYNC_URL) return; clearTimeout(pushTimer); pushTimer = setTimeout(push, 2500); }
+async function push() {
+  const code = localStorage.getItem(CODE_KEY); if (!SYNC_URL || !code || !navigator.onLine) return;
+  try {
+    const body = Object.assign({}, P); delete body.sound;
+    const r = await fetch(`${SYNC_URL}/p/${code}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (r.status === 409) { await pull(); return; }
+    if (r.ok) localStorage.setItem(SYNC_KEY, Date.now());
+  } catch (e) {}
+}
+async function pull() {
+  const code = localStorage.getItem(CODE_KEY); if (!SYNC_URL || !code) return;
+  try {
+    const r = await fetch(`${SYNC_URL}/p/${code}`);
+    if (!r.ok) return;
+    const remote = await r.json();
+    if (remote && remote.version === 1 && remote.updatedAt > P.updatedAt) {
+      const sound = P.sound; P = Object.assign(blank(), remote, { sound });
+      localStorage.setItem(STORE, JSON.stringify(P)); render();
+    }
+    localStorage.setItem(SYNC_KEY, Date.now());
+  } catch (e) {}
+}
+async function loadFromCode() {
+  const code = cleanCode($("#codein").value);
+  if (code.length !== 8) return toast("Codes have 8 letters and numbers");
+  try {
+    const r = await fetch(`${SYNC_URL}/p/${code}`);
+    if (r.status === 404) return toast("No progress found for that code");
+    if (!r.ok) throw 0;
+    const remote = await r.json();
+    if (!confirm("Replace the progress on this phone with the saved progress?")) return;
+    const sound = P.sound; P = Object.assign(blank(), remote, { sound });
+    localStorage.setItem(STORE, JSON.stringify(P));
+    localStorage.setItem(CODE_KEY, code); localStorage.setItem(SYNC_KEY, Date.now());
+    toast("Progress loaded"); go("home");
+  } catch (e) { toast("Couldn't reach the backup. Check your connection and try again."); }
+}
+async function initSync() {
+  if (!SYNC_URL) return;
+  if (!localStorage.getItem(CODE_KEY)) { localStorage.setItem(CODE_KEY, newCode()); schedulePush(); return; }
+  await pull(); schedulePush();
+}
+
+/* ================= start ================= */
+history.replaceState({ v: "home" }, "");
+render();
+initSync();
+window.addEventListener("online", () => schedulePush());
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+</script>
+</body>
+</html>
